@@ -11,7 +11,7 @@ export function toBook(raw: any) {
 }
 
 export async function getBooks(page = 1, signal?: AbortSignal) {
-  const payload = await getJSON(`/public/books?page=${page}&limit=3`, signal);
+  const payload = await getJSON(`/public/books?page=${page}&limit=4`, signal);
   return payload.data.data.map(toBook);
 }
 
