@@ -1,25 +1,33 @@
 import { useContext } from "react";
 import { useSearchParams } from "react-router";
-import { books } from "../books";
 import BookCard from "../BookCard";
 import { ContextFavorites } from "../ContextFavorites";
+import { useLoad } from "../useLoad";
+import { getBooks } from "../api";
+import RequestError from "../RequestError";
 
 export default function BooksPage() {
   const context = useContext(ContextFavorites);
   const [params, setParams] = useSearchParams();
   const q: string = params.get("q") ?? "";
 
+  const { data: books, loading, error, retry } = useLoad(getBooks, 1);
+
   const idsFavorites = context?.idsFavorites || [];
   const addFavorite = context?.addFavorite || (() => {});
   const deleteFavorite = context?.deleteFavorite || (() => {});
 
-  const found = books.filter((b) =>
-    b.title.toLowerCase().includes(q.toLowerCase())
-  );
-
   function change(value: string): void {
     setParams(value ? { q: value } : {}, { replace: true });
   }
+
+  if (loading) return <p>Загрузка...</p>;
+  if (error) return <RequestError error={error} onRetry={retry} />;
+  if (!books || books.length === 0) return <p>Книг пока нет</p>;
+
+  const found = books.filter((b: any) =>
+    b.title.toLowerCase().includes(q.toLowerCase())
+  );
 
   return (
     <section>
@@ -29,7 +37,9 @@ export default function BooksPage() {
       </label>
       <button onClick={() => change("")}>Очистить</button>
 
-      {found.map((book) => (
+      <p>Избранных книг: {idsFavorites.length}</p>
+
+      {found.map((book: any) => (
         <BookCard
           key={book.id}
           book={book}
